@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Tuple
 import operation_classification as oc
 import linear_models as lm
 from utils import DataFrameGenerator
+import math
 
 
 
@@ -57,11 +58,26 @@ def latency_prediction_elementwise(operation_type: oc.OperationType, operation: 
     assert len(shapes) == 1
 
     shape = shapes[0]
+
+    if len(shape) > 2:
+        #NOTE: This is a temporary solution to handle the case where the shape is greater than 2
+        dim1 = math.prod(shape[:-1])
+        dim2 = shape[-1]
+        shape = (dim1, dim2)
+
+    # Handle outlier cases for 2D shape
+    if len(shape) == 2:
+        dim1, dim2 = shape
+        if(dim1 % 128 ==0 and dim2 % 128 !=0 and dim2 > 128):
+            dim2 = ((dim2//128) + 1)*128
+        elif(dim1 % 128 !=0 and dim2 % 128 ==0 and dim1 > 128):
+            dim1 = ((dim1//128) + 1)*128
+        shape = (dim1, dim2)
+    
     size = 1
     for dim in shape:
         size *= dim
 
-    operation = oc.OperationElementwise.ADD # Temporary model bypass
     if operation == oc.OperationElementwise.ADD:
         if len(shape) == 1:
             return lm.linear_model_elementwise_add_1d(size)
@@ -70,13 +86,35 @@ def latency_prediction_elementwise(operation_type: oc.OperationType, operation: 
         else:
             raise ValueError(f"Unsupported shape: {shape}")
     elif operation == oc.OperationElementwise.SUBTRACT:
-        return 1.0
+        if len(shape) == 1:
+            return lm.linear_model_elementwise_subtract_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_elementwise_subtract_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
     elif operation == oc.OperationElementwise.MULTIPLY:
-        return 1.0
+        if len(shape) == 1:
+            return lm.linear_model_elementwise_multiply_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_elementwise_multiply_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
     elif operation == oc.OperationElementwise.DIVIDE:
-        return 1.0
+        if len(shape) == 1:
+            return lm.linear_model_elementwise_divide_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_elementwise_divide_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
     else:
-        raise ValueError(f"Unsupported operation: {operation}")
+        # TODO: temporary use add model
+        # I think the rest is the bit oeprations, which may close to add
+        if len(shape) == 1:
+                    return lm.linear_model_elementwise_add_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_elementwise_add_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
 
 
 
@@ -86,43 +124,141 @@ def latency_prediction_activation(operation_type: oc.OperationType, operation: o
     assert len(shapes) == 1
 
     shape = shapes[0]
+    
+    if len(shape) > 2:
+        # NOTE: This is a temporary solution to handle the case where the shape is greater than 2
+        dim1 = math.prod(shape[:-1])
+        dim2 = shape[-1]
+        shape = (dim1, dim2)
+
+    # Handle outlier cases for 2D shape (similar to elementwise operations)
+    if len(shape) == 2:
+        dim1, dim2 = shape
+        if(dim1 % 128 == 0 and dim2 % 128 != 0 and dim2 > 128):
+            dim2 = ((dim2//128) + 1)*128
+        elif(dim1 % 128 != 0 and dim2 % 128 == 0 and dim1 > 128):
+            dim1 = ((dim1//128) + 1)*128
+        shape = (dim1, dim2)
+    
     size = 1
     for dim in shape:
         size *= dim
 
-    return lm.linear_model_activation(size)
+    # Use specific models based on operation and dimension
+    if operation == oc.OperationActivation.BINARY:
+        if len(shape) == 1:
+            return lm.linear_model_activation_binary_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_activation_binary_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
+    elif operation == oc.OperationActivation.ELU:
+        if len(shape) == 1:
+            return lm.linear_model_activation_elu_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_activation_elu_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
+    elif operation == oc.OperationActivation.LEAKY_RELU:
+        if len(shape) == 1:
+            return lm.linear_model_activation_leaky_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_activation_leaky_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
+    elif operation == oc.OperationActivation.LINEAR:
+        if len(shape) == 1:
+            return lm.linear_model_activation_linear_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_activation_linear_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
+    elif operation == oc.OperationActivation.PARAMETRIC_RELU:
+        if len(shape) == 1:
+            return lm.linear_model_activation_parametric_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_activation_parametric_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
+    elif operation == oc.OperationActivation.RELU:
+        if len(shape) == 1:
+            return lm.linear_model_activation_relu_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_activation_relu_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
+    elif operation == oc.OperationActivation.SELU:
+        if len(shape) == 1:
+            return lm.linear_model_activation_selu_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_activation_selu_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
+    elif operation == oc.OperationActivation.SIGMOID:
+        if len(shape) == 1:
+            return lm.linear_model_activation_sigmoid_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_activation_sigmoid_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
+    elif operation == oc.OperationActivation.TANH:
+        if len(shape) == 1:
+            return lm.linear_model_activation_tanh_1d(size)
+        elif len(shape) == 2:
+            return lm.linear_model_activation_tanh_2d(size)
+        else:
+            raise ValueError(f"Unsupported shape: {shape}")
+    else:
+        raise ValueError(f"Unsupported operation: {operation}")
 
 
 def latency_prediction_normalization(operation_type: oc.OperationType, operation: oc.OperationBase,  shapes: List[Tuple[int, ...]],  operation_params: Dict[str, Any]) -> float:
     assert operation_type == oc.OperationType.NORMALIZATION
     assert operation in oc.OperationNormalization.__members__.values()
-    assert len(shapes) == 1
 
     shape = shapes[0]
+    
+    assert len(shape) >=2
+    # NOTE: This is a temporary solution to handle the case where the shape is greater than 2
+    
     size = 1
     for dim in shape:
         size *= dim
 
-    # TODO: use more specific models for each normalization operation
+    # Use specific models based on operation and dimension
     if operation == oc.OperationNormalization.LAYER_NORM:
-        return lm.linear_model_normalization_layer_norm(size)
-    elif operation == oc.OperationNormalization.BATCH_NORM:
-        # Use similar model to layer norm for now (could be refined with specific data)
-        return lm.linear_model_normalization_layer_norm(size) * 0.8  # Batch norm is typically faster
+            return lm.linear_model_normalization_layer_norm_2d(size)
     elif operation == oc.OperationNormalization.RMS_NORM:
-        # RMS norm is similar to layer norm but slightly more efficient
-        return lm.linear_model_normalization_layer_norm(size) * 0.9
-    elif operation == oc.OperationNormalization.INSTANCE_NORM:
-        # Instance norm operates per sample, similar overhead
-        return lm.linear_model_normalization_layer_norm(size) * 1.1
-    elif operation == oc.OperationNormalization.GROUP_NORM:
-        # Group norm has additional grouping overhead
-        return lm.linear_model_normalization_layer_norm(size) * 1.2
+            return lm.linear_model_normalization_rms_norm_2d(size)
+    elif operation == oc.OperationNormalization.BATCH_NORM:
+        return lm.linear_model_normalization_layer_norm_2d(size) 
+
     else:
         raise ValueError(f"Unsupported operation: {operation}")
 
 def latency_prediction_pooling(operation_type: oc.OperationType, operation: oc.OperationBase,  shapes: List[Tuple[int, ...]],  operation_params: Dict[str, Any]) -> float:
-    pass
+    assert operation_type == oc.OperationType.POOLING
+    assert operation in oc.OperationPooling.__members__.values()
+    shape = shapes[0]
+    assert len(shape) == 4
+
+    # Calculate total size from shape
+    size = 1
+    for dim in shape:
+        size *= dim
+
+    if operation == oc.OperationPooling.MAX_POOLING:
+        if shape[1] %128 == 0 and (shape[2] %256 == 128 or shape[3] %128 == 128):
+            return lm.linear_model_pooling_max_pooling_s1(size)
+        elif shape[2] > 768 and shape[2] <= 1024 and shape[3] >= 768 and shape[3] <= 896:
+            return lm.linear_model_pooling_max_pooling_s2(size)
+        else:
+            return lm.linear_model_pooling_max_pooling(size)
+    elif operation == oc.OperationPooling.AVG_POOLING:
+        # Use max pooling model scaled down for avg pooling (typically faster)
+        return lm.linear_model_pooling_max_pooling(size) * 0.8
+    else:
+        raise ValueError(f"Unsupported operation: {operation}")
 
 def latency_prediction_matmul(operation_type: oc.OperationType, operation: oc.OperationBase,  shapes: List[Tuple[int, ...]],  operation_params: Dict[str, Any]) -> float:
     assert operation_type == oc.OperationType.MATMUL

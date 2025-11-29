@@ -28,31 +28,39 @@ shape_list = []
 
 
 # 1D shapes
-# for m in range(32, 8193, 32):
-#     shape_list.append((m,))
-# print(len(shape_list))
-
-for m in range(8192, 32769, 128):
+for m in range(128, 8193, 128):
     shape_list.append((m,))
+print(len(shape_list))
+
 
 # 2D shapes
-# for m in range(64, 1025, 64):
-#     for n in range(64, 1025, 64):
-#         shape_list.append((m, n))
-# print(len(shape_list))
+for m in range(128, 1025, 128):
+    for n in range(128, 1025, 128):
+        shape_list.append((m, n))
+print(len(shape_list))
 
 
 config_list = []
 for shape in shape_list:
     shape_str = str(shape).replace(" ", "")
-    config_name = f"add_{shape}"
-    config_list.append(kc.generate_vector_op_config(config_name,kf.KernelType.VECTOR_ADD, shape))
+    config_name = f"sub_{shape}"
+    config_list.append(kc.generate_vector_op_config(config_name,kf.KernelType.VECTOR_SUB, shape))
 
-manager = fv.ValidationManager(profile_dir="./traces/trace_add_1d_2_repeat20")
+for shape in shape_list:
+    shape_str = str(shape).replace(" ", "")
+    config_name = f"mul_{shape}"
+    config_list.append(kc.generate_vector_op_config(config_name,kf.KernelType.VECTOR_MUL, shape))
+    
+for shape in shape_list:
+    shape_str = str(shape).replace(" ", "")
+    config_name = f"div_{shape}"
+    config_list.append(kc.generate_vector_op_config(config_name,kf.KernelType.VECTOR_DIV, shape))
+
+manager = fv.ValidationManager(profile_dir="./traces/trace_element_wise_repeat10")
 
 for config in config_list:
     manager.add_config(config)
 
-manager.profile_all_packages(repeat = 20)
+manager.profile_all_packages(repeat = 10)
 manager.parse_all_packages()
 df = manager.get_filtered_events_dataframe(save_to_file=True)

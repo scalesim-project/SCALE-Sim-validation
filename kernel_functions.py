@@ -170,10 +170,16 @@ def validation_batch_norm_simple_training(input_A: jnp.ndarray, axis: int = -1,
         axis: Axis to normalize over (default: -1)
         eps: Small constant for numerical stability
     """
-    # Create gamma and beta with reduced shape - JAX will handle broadcasting automatically
+    # Create gamma and beta with reduced shape and reshape for broadcasting
     reduced_shape = input_A.shape[axis]
     gamma = jnp.ones(reduced_shape)
     beta = jnp.zeros(reduced_shape)
+    
+    # Reshape gamma and beta for proper broadcasting
+    broadcast_shape = [1] * input_A.ndim
+    broadcast_shape[axis] = reduced_shape
+    gamma = gamma.reshape(broadcast_shape)
+    beta = beta.reshape(broadcast_shape)
     
     # Calculate axes to reduce over (all except the specified axis)
     all_axes = set(range(input_A.ndim))
@@ -186,7 +192,7 @@ def validation_batch_norm_simple_training(input_A: jnp.ndarray, axis: int = -1,
     normalized = (input_A - mean) / jnp.sqrt(var + eps)
     return gamma * normalized + beta
 
-def validation_batch_norm_simple_inference(input_A: jnp.ndarray, axis: int = -1, 
+def validation_batch_norm_simple_inference(input_A: jnp.ndarray, axis: int = 1, 
                                 eps: float = 1e-5) -> jnp.ndarray:
     """
     Simplified Batch Normalization that computes normalization over specified axis.
@@ -196,10 +202,10 @@ def validation_batch_norm_simple_inference(input_A: jnp.ndarray, axis: int = -1,
         axis: Axis to normalize over (default: -1)
         eps: Small constant for numerical stability
     """
-    mean = jnp.zeros(input_A.shape[axis])
-    var = jnp.ones(input_A.shape[axis])
-    gamma = jnp.ones(input_A.shape[axis])
-    beta = jnp.zeros(input_A.shape[axis])
+    mean = jnp.zeros(input_A.shape[axis]).reshape(1, input_A.shape[axis], 1, 1)
+    var = jnp.ones(input_A.shape[axis]).reshape(1, input_A.shape[axis], 1, 1)
+    gamma = jnp.ones(input_A.shape[axis]).reshape(1, input_A.shape[axis], 1, 1)
+    beta = jnp.zeros(input_A.shape[axis]).reshape(1, input_A.shape[axis], 1, 1)
 
     normalized = (input_A - mean) / jnp.sqrt(var + eps)
     return gamma * normalized + beta    
@@ -282,6 +288,17 @@ def validation_rms_norm(input_A: jnp.ndarray, gamma: jnp.ndarray = None, eps: fl
     
     return gamma * normalized
 
+def validation_rms_norm_simple(input_A: jnp.ndarray, axis: int = -1, eps: float = 1e-5) -> jnp.ndarray:
+    """
+    Simplified RMS Normalization that computes normalization over specified axis.
+    """
+    reduced_shape = tuple(input_A.shape[ax] for ax in axis)
+    gamma = jnp.ones(reduced_shape)
+    beta = jnp.zeros(reduced_shape)
+    square_mean = jnp.mean(input_A * input_A, axis=axis, keepdims=True)
+    normalized = (input_A) / jnp.sqrt(square_mean + eps)
+    return gamma * normalized + beta
+
 def validation_instance_norm(input_A: jnp.ndarray, gamma: jnp.ndarray = None, beta: jnp.ndarray = None, 
                             eps: float = 1e-5) -> jnp.ndarray:
     """
@@ -341,6 +358,68 @@ def validation_instance_norm(input_A: jnp.ndarray, gamma: jnp.ndarray = None, be
     
     return gamma * normalized + beta
 
+def validation_max_pooling(input_A: jnp.ndarray, window_shape: Tuple[int, ...] = (2, 2), 
+                          strides: Tuple[int, ...] = None, padding: str = "VALID") -> jnp.ndarray:
+    """
+    Max Pooling: applies max pooling over spatial dimensions
+    
+    Args:
+        input_A: Input tensor, typically shape (N, C, H, W) for 2D pooling
+        window_shape: Pooling window size (default: (2, 2))
+        strides: Stride for pooling operation (default: same as window_shape)
+        padding: Padding type, either "VALID" or "SAME" (default: "VALID")
+    
+    Returns:
+        Pooled tensor with reduced spatial dimensions
+    """
+    if strides is None:
+        strides = window_shape
+    
+    # Use JAX's reduce_window for max pooling
+    return jax.lax.reduce_window(
+        input_A,
+        init_value=-jnp.inf,
+        computation=jax.lax.max,
+        window_dimensions=(1, 1) + window_shape,  # Keep batch and channel dims
+        window_strides=(1, 1) + strides,
+        padding=padding
+    )
+
+def validation_avg_pooling(input_A: jnp.ndarray, window_shape: Tuple[int, ...] = (2, 2), 
+                          strides: Tuple[int, ...] = None, padding: str = "VALID") -> jnp.ndarray:
+    """
+    Average Pooling: applies average pooling over spatial dimensions
+    
+    Args:
+        input_A: Input tensor, typically shape (N, C, H, W) for 2D pooling
+        window_shape: Pooling window size (default: (2, 2))
+        strides: Stride for pooling operation (default: same as window_shape)
+        padding: Padding type, either "VALID" or "SAME" (default: "VALID")
+    
+    Returns:
+        Pooled tensor with reduced spatial dimensions
+    """
+    if strides is None:
+        strides = window_shape
+    
+    # Use JAX's reduce_window for average pooling
+    pooled = jax.lax.reduce_window(
+        input_A,
+        init_value=0.0,
+        computation=jax.lax.add,
+        window_dimensions=(1, 1) + window_shape,  # Keep batch and channel dims
+        window_strides=(1, 1) + strides,
+        padding=padding
+    )
+    
+    # Divide by window size to get average
+    window_size = jnp.prod(jnp.array(window_shape))
+    return pooled / window_size
+
+
+def validation_broadcast_to_dim(input_A: jnp.ndarray, shape: Tuple[int, ...], broadcast_dimensions: Tuple[int, ...]) -> jnp.ndarray:
+    return jax.lax.broadcast_in_dim(input_A, shape=shape, broadcast_dimensions=broadcast_dimensions)
+
 
 
 class ScaleSimTopologyType(Enum):
@@ -377,8 +456,11 @@ class KernelType(Enum):
     LAYER_NORM = "layer_norm"
     LAYER_NORM_SIMPLE = "layer_norm_simple"
     RMS_NORM = "rms_norm"
+    RMS_NORM_SIMPLE = "rms_norm_simple"
     INSTANCE_NORM = "instance_norm"
-    
+    MAX_POOLING = "max_pooling"
+    AVG_POOLING = "avg_pooling"
+    BROADCAST_TO_DIM = "broadcast_to_dim"
 
 
     def get_kernel(self) -> Callable:
@@ -438,8 +520,16 @@ class KernelType(Enum):
             return validation_layer_norm_simple
         elif self == KernelType.RMS_NORM:
             return validation_rms_norm
+        elif self == KernelType.RMS_NORM_SIMPLE:
+            return validation_rms_norm_simple
         elif self == KernelType.INSTANCE_NORM:
             return validation_instance_norm
+        elif self == KernelType.MAX_POOLING:
+            return validation_max_pooling
+        elif self == KernelType.AVG_POOLING:
+            return validation_avg_pooling
+        elif self == KernelType.BROADCAST_TO_DIM:
+            return validation_broadcast_to_dim
         else:
             raise ValueError(f"Unknown kernel type: {self}")
     

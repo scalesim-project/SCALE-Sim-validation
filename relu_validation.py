@@ -25,20 +25,18 @@ for M in range(128, 8193, 128):
             shape_list.append((M,))
 print(len(shape_list))
 
-for M in range(32, 1025,32):
-    for N in range(32, 1025, 32):
-        if M*N > 8192:
-            continue
+for M in range(128, 1025,128):
+    for N in range(128, 1025, 128):
         shape_list.append((M, N))
 print(len(shape_list))
 
-for M in range(8, 256, 8):
-    for N in range(8, 256, 8):
-        for K in range(8, 256, 8):
-            if M*N*K > 8192:
-                continue
-            shape_list.append((M, N, K))
-print(len(shape_list))
+# for M in range(8, 256, 8):
+#     for N in range(8, 256, 8):
+#         for K in range(8, 256, 8):
+#             if M*N*K > 8192:
+#                 continue
+#             shape_list.append((M, N, K))
+# print(len(shape_list))
 
 activation_type_list = [kf.KernelType.RELU, kf.KernelType.SIGMOID, kf.KernelType.TANH, kf.KernelType.LEAKY_RELU, kf.KernelType.ELU, kf.KernelType.SELU, kf.KernelType.PARAMETRIC_RELU, kf.KernelType.BINARY_STEP, kf.KernelType.LINEAR]
 
@@ -50,11 +48,11 @@ for activation_type in activation_type_list:
         config_name = f"{activation_type_name}_{shape_str}"
         config_list.append(kc.generate_activation_config(config_name, activation_type, shape))
 
-manager = fv.ValidationManager(profile_dir="./traces/trace_activation_repeat20")
+manager = fv.ValidationManager(profile_dir="./traces/trace_activation_repeat10")
 
 for config in config_list:
     manager.add_config(config)
 
-manager.profile_all_packages(repeat = 20)
+manager.profile_all_packages(repeat = 10)
 manager.parse_all_packages()
 df = manager.get_filtered_events_dataframe(save_to_file=True)

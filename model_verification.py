@@ -28,12 +28,17 @@ OPERATION_TO_KERNEL_CONFIG_MAP: Dict[oc.OperationBase, Callable] = {
     oc.OperationActivation.SELU: lambda name, shape: kc.generate_activation_config(name, kf.KernelType.SELU, shape),
     oc.OperationActivation.PARAMETRIC_RELU: lambda name, shape: kc.generate_activation_config(name, kf.KernelType.PARAMETRIC_RELU, shape),
     oc.OperationActivation.LINEAR: lambda name, shape: kc.generate_activation_config(name, kf.KernelType.LINEAR, shape),
+    oc.OperationActivation.BINARY: lambda name, shape: kc.generate_activation_config(name, kf.KernelType.BINARY_STEP, shape),
     
     # Normalization operations
-    oc.OperationNormalization.BATCH_NORM: lambda name, shape, axis=-1: kc.generate_batch_norm_config(name, shape, axis),
+    oc.OperationNormalization.BATCH_NORM: lambda name, shape, axis=-1: kc.generate_batch_norm_training_config(name, shape, axis),
     oc.OperationNormalization.LAYER_NORM: lambda name, shape, axis=(-1,): kc.generate_layer_norm_config(name, shape, axis),
-    oc.OperationNormalization.RMS_NORM: lambda name, shape: kc.generate_activation_config(name, kf.KernelType.RMS_NORM, shape),
+    oc.OperationNormalization.RMS_NORM: lambda name, shape, axis=-1: kc.generate_rms_norm_config(name, shape, axis),
     oc.OperationNormalization.INSTANCE_NORM: lambda name, shape: kc.generate_activation_config(name, kf.KernelType.INSTANCE_NORM, shape),
+    
+    # Pooling operations
+    oc.OperationPooling.MAX_POOLING: lambda name, shape, window_shape=(2, 2), strides=(2, 2), padding='VALID': kc.generate_max_pooling_config(name, shape, window_shape, strides, padding),
+    oc.OperationPooling.AVG_POOLING: lambda name, shape, window_shape=(2, 2), strides=(2, 2), padding='VALID': kc.generate_avg_pooling_config(name, shape, window_shape, strides, padding),
     
     # Matrix multiplication operations
     oc.OperationMatmul.LINEAR: lambda name, M, N, K: kc.generate_matrix_multiply_config(name, M, N, K),
@@ -56,12 +61,17 @@ OPERATION_TO_KERNEL_TYPE_MAP: Dict[oc.OperationBase, kf.KernelType] = {
     oc.OperationActivation.SELU: kf.KernelType.SELU,
     oc.OperationActivation.PARAMETRIC_RELU: kf.KernelType.PARAMETRIC_RELU,
     oc.OperationActivation.LINEAR: kf.KernelType.LINEAR,
+    oc.OperationActivation.BINARY: kf.KernelType.BINARY_STEP,
     
     # Normalization operations
     oc.OperationNormalization.BATCH_NORM: kf.KernelType.BATCH_NORM_SIMPLE_TRAINING,
     oc.OperationNormalization.LAYER_NORM: kf.KernelType.LAYER_NORM_SIMPLE,
     oc.OperationNormalization.RMS_NORM: kf.KernelType.RMS_NORM,
     oc.OperationNormalization.INSTANCE_NORM: kf.KernelType.INSTANCE_NORM,
+    
+    # Pooling operations
+    oc.OperationPooling.MAX_POOLING: kf.KernelType.MAX_POOLING,
+    oc.OperationPooling.AVG_POOLING: kf.KernelType.AVG_POOLING,
 }
 
 

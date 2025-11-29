@@ -164,6 +164,14 @@ class ValidationPackage:
             "profile_folder": self.profile_folder
         }
 
+    def get_stableHLO_string(self) -> str:
+        if self.jit_kernel is None:
+            raise ValueError("JIT kernel not initialized. Run setup_validation() first.")
+
+        return self.jit_lower.as_text(dialect='stablehlo')
+
+        # return self.jit_lower.compiler_ir(dialect='stablehlo')
+
     def setup_validation(self):
         input_structs = []
         for shape, dtype in self.config.inputs:
@@ -176,10 +184,12 @@ class ValidationPackage:
             # Create a wrapper function that includes the kernel parameters
             def kernel_with_params(*tensor_inputs):
                 return kernel_func(*tensor_inputs, **self.config.kernel_params)
-            self.jit_kernel = jax.jit(kernel_with_params).lower(*input_structs).compile()
+            self.jit_lower = jax.jit(kernel_with_params).lower(*input_structs)
+            self.jit_kernel = self.jit_lower.compile()
         else:
             # No parameters, use kernel function directly
-            self.jit_kernel = jax.jit(kernel_func).lower(*input_structs).compile()
+            self.jit_lower = jax.jit(kernel_func).lower(*input_structs)
+            self.jit_kernel = self.jit_lower.compile()
         
         for shape, dtype in self.config.inputs:
             self.inputs.append(jax.random.normal(jax.random.key(0), shape, dtype))
@@ -187,6 +197,7 @@ class ValidationPackage:
     def run_validation(self):
         if self.jit_kernel is None:
             raise ValueError("JIT kernel not initialized. Run setup_validation() first.")
+
         self.output = self.jit_kernel(*self.inputs)
         return self.output
 
@@ -312,6 +323,13 @@ class ValidationManager:
 
     def clear_packages(self):
         self.packages = []
+
+    def setup_all_packages(self):
+        for package in self.packages:
+            package.setup_validation()
+
+    def get_all_stableHLO_strings(self) -> List[str]:
+        return [package.get_stableHLO_string() for package in self.packages]
 
     def profile_all_packages(self, repeat: int = 1):
         for package in self.packages:

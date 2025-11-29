@@ -64,10 +64,54 @@ def generate_layer_norm_config(name: str, shape: Tuple[int, ...], axis: Tuple[in
         kernel_params={"axis": axis}
     )
 
-def generate_batch_norm_config(name: str, shape: Tuple[int, ...], axis: int) -> fv.ValidationConfig:
+def generate_rms_norm_config(name: str, shape: Tuple[int, ...], axis: int) -> fv.ValidationConfig:
+    return fv.ValidationConfig(
+        name=name,
+        kernel_type=kf.KernelType.RMS_NORM_SIMPLE,
+        inputs=[(shape, jnp.float16)],
+        kernel_params={"axis": axis}
+    )
+
+def generate_batch_norm_training_config(name: str, shape: Tuple[int, ...], axis: int) -> fv.ValidationConfig:
     return fv.ValidationConfig(
         name=name,
         kernel_type=kf.KernelType.BATCH_NORM_SIMPLE_TRAINING,
         inputs=[(shape, jnp.float16)],
         kernel_params={"axis": axis}
+    )
+
+def generate_batch_norm_inference_config(name: str, shape: Tuple[int, ...], axis: int) -> fv.ValidationConfig:
+    return fv.ValidationConfig(
+        name=name,
+        kernel_type=kf.KernelType.BATCH_NORM_SIMPLE_INFERENCE,
+        inputs=[(shape, jnp.float16)],
+        kernel_params={"axis": axis}
+    )
+
+def generate_max_pooling_config(name: str, shape: Tuple[int, ...], window_shape: Tuple[int, ...] = (2, 2), 
+                               strides: Tuple[int, ...] = (2, 2), padding: str = "VALID") -> fv.ValidationConfig:
+    """Generate max pooling config for NCHW input format."""
+    return fv.ValidationConfig(
+        name=name,
+        kernel_type=kf.KernelType.MAX_POOLING,
+        inputs=[(shape, jnp.float16)],
+        kernel_params={"window_shape": window_shape, "strides": strides, "padding": padding}
+    )
+
+def generate_avg_pooling_config(name: str, shape: Tuple[int, ...], window_shape: Tuple[int, ...] = (2, 2), 
+                               strides: Tuple[int, ...] = (2, 2), padding: str = "VALID") -> fv.ValidationConfig:
+    """Generate average pooling config for NCHW input format."""
+    return fv.ValidationConfig(
+        name=name,
+        kernel_type=kf.KernelType.AVG_POOLING,
+        inputs=[(shape, jnp.float16)],
+        kernel_params={"window_shape": window_shape, "strides": strides, "padding": padding}
+    )
+
+def generate_broadcast_to_dim_config(name: str, input_shape: Tuple[int, ...], shape: Tuple[int, ...], broadcast_dimensions: Tuple[int, ...]) -> fv.ValidationConfig:
+    return fv.ValidationConfig(
+        name=name,
+        kernel_type=kf.KernelType.BROADCAST_TO_DIM,
+        inputs=[(input_shape, jnp.float16)],
+        kernel_params={"shape": shape, "broadcast_dimensions": broadcast_dimensions}
     )

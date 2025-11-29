@@ -15,7 +15,7 @@ shape_list = []
 #         for H in [512,768,1024,2048,4096,8192]:
 #             shape_list.append((N, L, H))
 
-for N in range(2, 14, 2):
+for N in range(1, 3,1):
     for L in range(128, 1025, 128):
         for H in range(512, 4097, 512):
             shape_list.append((N, L, H))
@@ -31,7 +31,13 @@ for shape in shape_list:
     config_name = f"layer_norm_{shape_str}"
     config_list.append(kc.generate_layer_norm_config(config_name, shape, axis = (2,)))
 
-manager = fv.ValidationManager(profile_dir="./traces/trace_layer_norm2_repeat10")
+for shape in shape_list:
+    shape_str = str(shape).replace(" ", "")
+    config_name = f"rms_norm_{shape_str}"
+    config_list.append(kc.generate_rms_norm_config(config_name, shape, axis = (2,)))
+
+
+manager = fv.ValidationManager(profile_dir="./traces/trace_layer_norm2_rms_norm_repeat10")
 
 for config in config_list:
     manager.add_config(config)

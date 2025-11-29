@@ -23,16 +23,17 @@ class OperationActivation(OperationBase):
     RELU = "relu"
     SIGMOID = "sigmoid"
     TANH = "tanh"
-    LEAKY_RELU = "leaky_relu"
+    LEAKY_RELU = "leaky"  # Updated to match report naming
     ELU = "elu"
     SELU = "selu"
-    PARAMETRIC_RELU = "parametric_relu"
+    PARAMETRIC_RELU = "parametric"  # Updated to match report naming
     LINEAR = "linear"
+    BINARY = "binary"  # Added based on report
 
 class OperationNormalization(OperationBase):
     BATCH_NORM = "batch_norm"
-    LAYER_NORM = "layer_norm"
-    RMS_NORM = "rms_norm"
+    LAYER_NORM = "layer"  # Updated to match report naming
+    RMS_NORM = "rms"  # Updated to match report naming
     INSTANCE_NORM = "instance_norm"
     GROUP_NORM = "group_norm"
 
