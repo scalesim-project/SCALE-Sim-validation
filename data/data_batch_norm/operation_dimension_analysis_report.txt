@@ -1,0 +1,42 @@
+Linear Regression Analysis by Operation and Dimension
+======================================================================
+
+Analysis: Relationship between Tuple Product and Average Duration
+Separated by Operation Type and Dimension Count
+Dataset: kernel_statistics_filtered.csv
+
+BATCH_2D ANALYSIS
+--------------------------------------------------
+Operation: batch
+Dimension: 2D
+Number of data points: 85
+Slope: 0.00000592 μs per unit product
+Intercept: 23.970025 μs
+R² Score: 0.983885
+RMSE: 38.997266 μs
+Pearson Correlation: 0.991910
+P-value: 3.51e-76
+Statistical significance: *** (p < 0.001)
+Linear equation: y = 0.00000592x + 23.970025
+Tuple product range: 4194304 to 268435456
+Duration range: 54.794018 to 1600.710554 μs
+
+COMPARATIVE ANALYSIS
+--------------------------------------------------
+Best model fit (highest R²): batch_2D (R² = 0.983885)
+Steepest scaling (highest slope): batch_2D (slope = 0.00000592)
+
+By Operation:
+  BATCH:
+    2D: R² = 0.9839, Slope = 0.00000592
+
+By Dimension:
+  2D:
+    Average R²: 0.9839
+    Average Slope: 0.00000592
+
+Files generated:
+- operation_dimension_regression.png
+- operation_dimension_comparison.png
+- operation_dimension_summary.csv
+- operation_dimension_analysis_report.txt

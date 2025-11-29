@@ -1,0 +1,42 @@
+Linear Regression Analysis by Operation and Dimension
+======================================================================
+
+Analysis: Relationship between Tuple Product and Average Duration
+Separated by Operation Type and Dimension Count
+Dataset: kernel_statistics_filtered.csv
+
+POOLAVING_2D ANALYSIS
+--------------------------------------------------
+Operation: poolaving
+Dimension: 2D
+Number of data points: 254
+Slope: 0.00001329 μs per unit product
+Intercept: -42.578215 μs
+R² Score: 0.905622
+RMSE: 203.528565 μs
+Pearson Correlation: 0.951642
+P-value: 3.60e-131
+Statistical significance: *** (p < 0.001)
+Linear equation: y = 0.00001329x + -42.578215
+Tuple product range: 1048576 to 234881024
+Duration range: 23.316012 to 3902.462634 μs
+
+COMPARATIVE ANALYSIS
+--------------------------------------------------
+Best model fit (highest R²): poolaving_2D (R² = 0.905622)
+Steepest scaling (highest slope): poolaving_2D (slope = 0.00001329)
+
+By Operation:
+  POOLAVING:
+    2D: R² = 0.9056, Slope = 0.00001329
+
+By Dimension:
+  2D:
+    Average R²: 0.9056
+    Average Slope: 0.00001329
+
+Files generated:
+- operation_dimension_regression.png
+- operation_dimension_comparison.png
+- operation_dimension_summary.csv
+- operation_dimension_analysis_report.txt

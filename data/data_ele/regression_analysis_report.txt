@@ -1,0 +1,40 @@
+Linear Regression Analysis Report
+==================================================
+
+Analysis: Relationship between Tuple Product and Average Duration
+Dataset: kernel_statistics_filtered.csv
+
+1D SHAPES ANALYSIS
+------------------------------
+Number of data points: 192
+Slope: 0.00002141
+Intercept: 0.891958
+R² Score: 0.751694
+RMSE: 0.029100
+Pearson Correlation: 0.867003
+P-value: 2.22e-59
+Statistical significance: *** (p < 0.001)
+Linear equation: y = 0.00002141x + 0.891958
+
+2D SHAPES ANALYSIS
+------------------------------
+Number of data points: 192
+Slope: 0.00001866
+Intercept: 0.942013
+R² Score: 0.984766
+RMSE: 0.589335
+Pearson Correlation: 0.992354
+P-value: 1.36e-174
+Statistical significance: *** (p < 0.001)
+Linear equation: y = 0.00001866x + 0.942013
+
+INTERPRETATION
+------------------------------
+2D shapes show stronger linear relationship than 1D shapes.
+1D slope: 0.00002141 μs per unit product
+2D slope: 0.00001866 μs per unit product
+
+Files generated:
+- linear_regression_analysis.png
+- detailed_analysis.png
+- regression_analysis_report.txt

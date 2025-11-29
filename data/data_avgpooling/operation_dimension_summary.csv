@@ -1,0 +1,2 @@
+Operation,Dimension,Category,N_Points,Slope,Intercept,R²,RMSE,Correlation,P_Value,Significance
+poolaving,2D,poolaving_2D,254,1.3293972653131205e-05,-42.57821491238872,0.9056218091139766,203.52856491841436,0.9516416390185838,3.5973705482068143e-131,*** (p < 0.001)
