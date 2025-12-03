@@ -14,6 +14,8 @@ This script processes the filtered_events.csv file to create a report with:
 import csv
 import re
 import statistics
+import sys
+import glob
 from collections import defaultdict
 from pathlib import Path
 
@@ -124,17 +126,49 @@ def write_report(results, output_file):
         writer.writerows(sorted_results)
 
 
-def main():
-    """Main function to process fusion events and generate report."""
-    # File paths
-    input_file = 'filtered_events.csv'
-    output_file = 'fusion_statistics_report.csv'
+def generate_output_filename(input_file):
+    """
+    Generate output filename based on input filename.
     
+    Args:
+        input_file (str): Path to input CSV file
+        
+    Returns:
+        str: Output filename
+    """
+    input_path = Path(input_file)
+    # Extract the base name without extension
+    base_name = input_path.stem
+    
+    # If the filename contains 'filtered_events', replace it with 'fusion_statistics_report'
+    if 'filtered_events' in base_name:
+        output_name = base_name.replace('filtered_events', 'fusion_statistics_report')
+    else:
+        # Otherwise, prepend 'fusion_statistics_report_' to the base name
+        output_name = f'fusion_statistics_report_{base_name}'
+    
+    return f'{output_name}.csv'
+
+
+def process_single_file(input_file):
+    """
+    Process a single input file and generate its report.
+    
+    Args:
+        input_file (str): Path to the input CSV file
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
     # Check if input file exists
     if not Path(input_file).exists():
         print(f"Error: Input file '{input_file}' not found!")
-        return
+        return False
     
+    # Generate output filename
+    output_file = generate_output_filename(input_file)
+    
+    print(f"\n{'='*60}")
     print(f"Processing {input_file}...")
     
     # Process the data
@@ -160,6 +194,35 @@ def main():
         print(f"    M: {min(r['dim_m'] for r in results)} - {max(r['dim_m'] for r in results)}")
         print(f"    N: {min(r['dim_n'] for r in results)} - {max(r['dim_n'] for r in results)}")
         print(f"    K: {min(r['dim_k'] for r in results)} - {max(r['dim_k'] for r in results)}")
+    
+    return True
+
+
+def main():
+    """Main function to process fusion events and generate report."""
+    # Check for command-line arguments
+    if len(sys.argv) > 1:
+        # Use provided file paths
+        input_files = sys.argv[1:]
+    else:
+        # Default: find all filtered_events*.csv files in current directory
+        input_files = sorted(glob.glob('filtered_events*.csv'))
+        
+        if not input_files:
+            print("Error: No filtered_events*.csv files found in current directory!")
+            print("Usage: python generate_fusion_report.py [input_file1.csv input_file2.csv ...]")
+            return
+    
+    print(f"Found {len(input_files)} file(s) to process")
+    
+    # Process each file
+    success_count = 0
+    for input_file in input_files:
+        if process_single_file(input_file):
+            success_count += 1
+    
+    print(f"\n{'='*60}")
+    print(f"Processing complete: {success_count}/{len(input_files)} file(s) successfully processed")
 
 
 if __name__ == '__main__':
