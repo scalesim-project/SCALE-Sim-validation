@@ -2,6 +2,8 @@
 
 A comprehensive framework for validating and benchmarking neural network operations using JAX profiling and latency prediction models.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## Overview
 
 This validation framework provides tools to:
@@ -384,7 +386,19 @@ When adding new operations:
 5. Create config generator in `kernel_configs.py`
 6. Add test case to `unified_model_verification.py`
 
+### Submitting Changes
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
 ## License
 
-Part of the SCALE-Sim project.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+Part of the [SCALE-Sim Project](https://github.com/scalesim-project/SCALE-Sim-validation).
 
