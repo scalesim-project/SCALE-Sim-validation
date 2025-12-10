@@ -1,2 +1,0 @@
-Operation,Dimension,Category,N_Points,Slope,Intercept,R²,RMSE,Correlation,P_Value,Significance
-batch,2D,batch_2D,85,5.915381657414275e-06,23.970024527885585,0.9838845055187763,38.99726553510212,0.9919095248654365,3.5087150974131776e-76,*** (p < 0.001)

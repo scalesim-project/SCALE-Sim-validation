@@ -1,0 +1,18 @@
+# SCALE-Sim Validation Framework Requirements
+# Python 3.8+ required
+
+# Core Dependencies
+# JAX for TPU kernel execution and profiling
+jax[tpu]>=0.4.0
+
+# Data manipulation and analysis
+pandas>=1.5.0
+numpy>=1.23.0
+
+# Note: JAX with TPU support is automatically included above
+# For CPU-only testing, use: jax>=0.4.0
+
+# Development and Testing (optional)
+# matplotlib>=3.5.0  # For visualization
+# scipy>=1.9.0       # For additional scientific computing
+
