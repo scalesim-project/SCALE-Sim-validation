@@ -214,3 +214,5 @@ trace/
 unified/
 *.csv
 !requirements.txt
+push_to_new_repo.sh
+SETUP_GITHUB.md
